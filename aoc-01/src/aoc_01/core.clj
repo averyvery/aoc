@@ -4,13 +4,31 @@
             [clojure.pprint :as pprint])
   (:gen-class))
 
-(defn -main
-  "I don't do a whole lot."
-  []
-  (let [costs (as-> "input.txt" v
+; Elapsed time: 1351.506931 msecs
+; Other ideas:
+; - would loop+recur be faster than using for to generate a lazy sequence of pairs?
+; - am I missing opportunities to filter numbers out?
+(defn- get-sum []
+  (let [cost-found? (atom false)
+        costs (as-> "input.txt" v
                     (io/resource v)
                     (io/file v)
                     (slurp v)
                     (str/split v #"\n")
-                    (map read-string v))]
-    (println "Hello, World!")))
+                    (map read-string v))
+        sums (into #{} (for [a costs
+                             b costs
+                             c costs
+                             :let [sum (when (and (not= a b)
+                                                  (not= b c))
+                                         (+ a b c))]
+                             :when (= 2020 sum)
+                             :while (false? @cost-found?)]
+                         (do
+                           (reset! cost-found? true)
+                           (* a b c))))]
+    (first sums)))
+
+(defn -main []
+  (time (pprint/pprint (get-sum))))
+
