@@ -24,6 +24,7 @@
                    (inc trees)
                    trees)))))))
 
+; Elapsed time: 14.097148 msecs
 (defn- count-trees [right down]
   (let [lines (as-> "input.txt" v
                     (io/resource v)
