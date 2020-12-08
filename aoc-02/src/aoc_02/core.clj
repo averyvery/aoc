@@ -14,7 +14,7 @@
   (read-string (str string-or-char)))
 
 ; Elapsed time: 21.897671 msecs
-(defn- get-count []
+(defn- get-count-v1 []
   (let [passwords (as-> "input.txt" v
                         (io/resource v)
                         (io/file v)
@@ -31,14 +31,33 @@
     (reduce (fn [total {:keys [min max letter password] :as opts}]
               (let [count (count-letters password letter)]
                 (if (and (<= min count max))
-                  (do
-                    (pprint/pprint "VALID")
-                    (pprint/pprint opts)
-                    (inc total))
-                  (do
-                    (pprint/pprint "INVALID")
-                    (pprint/pprint opts)
-                    total))))
+                  (inc total)
+                  total)))
+            0
+            passwords)))
+
+; Elapsed time: 21.540742 msecs
+(defn- get-count []
+  (let [passwords (as-> "input.txt" v
+                        (io/resource v)
+                        (io/file v)
+                        (slurp v)
+                        (str/split v #"\n")
+                        (map (fn [string]
+                               (let [parts (str/split string #"\s")
+                                     positions (str/split (first parts) #"-")]
+                                 {:pos-1 (- (to-number (first positions)) 1)
+                                  :pos-2 (- (to-number (last positions)) 1)
+                                  :letter (first (second parts))
+                                  :password (last parts)}))
+                             v))]
+    (reduce (fn [total {:keys [pos-1 pos-2 letter password] :as opts}]
+              (if (or (and (= letter (nth password pos-1))
+                           (not= letter (nth password pos-2)))
+                      (and (= letter (nth password pos-2))
+                           (not= letter (nth password pos-1))))
+                (inc total)
+                total))
             0
             passwords)))
 
